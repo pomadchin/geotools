@@ -1395,6 +1395,35 @@ public class GeoTiffReaderTest {
         }
     }
 
+    @Test
+    public void testFloat32() throws IOException {
+        // has a very large nodata value with different values in float and double
+        final File scaleOffset = // NoData Value=-inf
+                TestData.file(GeoTiffReaderTest.class, "float32.tif");
+        GeoTiffReader reader = new GeoTiffReader(scaleOffset);
+
+        // read with explicit request not to rescale
+        GridCoverage2D coverage = null;
+        try {
+            coverage = reader.read(null);
+            ImageWorker iw = new ImageWorker(coverage.getRenderedImage());
+
+            Range noDataRange = iw.getNoData();
+            double noData = noDataRange.getMin().doubleValue();
+            assertEquals(-3.40282306073709653E38, noData, 0d);
+
+            // The pixel in the top right corner should be nodata, check that the range contains it
+            Raster data = iw.getRenderedImage().getData();
+            double sample = data.getSampleDouble(data.getWidth() - 1, 0, 0);
+            assertTrue(noDataRange.contains(sample));
+        } finally {
+            if (coverage != null) {
+                ImageUtilities.disposeImage(coverage.getRenderedImage());
+                coverage.dispose(true);
+            }
+        }
+    }
+
     private static void checkPixel(Raster data, int x, int y, Color expectedColor) {
         int[] pixel = new int[3];
         data.getPixel(x, y, pixel);

@@ -923,6 +923,9 @@ public class GeoTiffReader extends AbstractGridCoverage2DReader implements GridC
 
         Category noDataCategory = null;
         final Map<String, Object> properties = new HashMap<>();
+        System.out.println("-------------");
+        System.out.println(noData);
+        System.out.println("-------------");
         if (!Double.isNaN(noData)) {
             noDataCategory =
                     new Category(
